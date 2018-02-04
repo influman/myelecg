@@ -1,7 +1,7 @@
 <?php  
             $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>";  
 	       //**********************************************************************************************************
-            // V2.0 : Script de suivi de la consommation électrique en tarif unique global
+            // V2.11 : Script de suivi de la consommation électrique en tarif unique global
             //*************************************** ******************************************************************
             // recuperation des infos depuis la requete
             // API CONSO INSTANTANEE - VAR1
@@ -73,11 +73,13 @@
 				$tab_api_cpt_init = array ("jour_global" => 0, "jour_prec_global" => 0, 
 								   "mois_global" => 0, "mois_prec_global" => 0,
 								   "annee_global" => 0, "annee_prec_global" => 0, "cpt_delta_global" => 0);
-            	if (loadVariable('MYELECGAPI_ABO_'.$api_compteur) != '') {
-				// charge le tableau des API abonnement de compteur
-                    $api_abo = loadVariable('MYELECGAPI_ABO_'.$api_compteur);
-                    if (loadVariable('MYELECG_ABO_'.$api_compteur) != '') {
-						$abobase = loadVariable('MYELECG_ABO_'.$api_compteur);
+				$preload = loadVariable('MYELECGAPI_ABO_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+            	// charge le tableau des API abonnement de compteur
+                    $api_abo = $preload;
+					$preload = loadVariable('MYELECG_ABO_'.$api_compteur);
+					if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+						$abobase = $preload;
 						$abo_ok = true;
 						if (!strpos($abobase, "GLOBAL")) {
 							$abohphc = true;
@@ -88,17 +90,17 @@
 						}
 					}
 				}
-				
-				if (loadVariable('MYELECGAPI_TARIF_'.$api_compteur) != '') {
+				$preload = loadVariable('MYELECGAPI_TARIF_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
 					// charge le tableau des API tarif de compteur
-                    	$api_tarif = loadVariable('MYELECGAPI_TARIF_'.$api_compteur);
-						$value = getValue($api_tarif, true);
-                    	$tarif_dev = $value['value_text'];
+                    $api_tarif = $preload;
+					$value = getValue($api_tarif, true);
+                    $tarif_dev = $value['value_text'];
 				}
-				
-				if (loadVariable('MYELECGAPI_CPT_'.$api_compteur) != '') {
-				// charge le tableau des API des différents compeuts J, J-1...
-                    $tab_api_current_cpt = loadVariable('MYELECGAPI_CPT_'.$api_compteur);
+				$preload = loadVariable('MYELECGAPI_CPT_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+					// charge le tableau des API des différents compeuts J, J-1...
+                    $tab_api_current_cpt = $preload;
                     if ($tab_api_current_cpt['jour_global'] != 0 and $tab_api_current_cpt['mois_global'] != 0 and $tab_api_current_cpt['annee_global'] != 0) {
 						$tab_api_cpt_ok = true;
 					}
@@ -177,8 +179,9 @@
 				if ($type_cumul) {
 					$mesure .= " (CUMUL)";
 					$dernier_releve = $etat_compteur;
-					if (loadVariable('MYELECG_LASTRELEVE_'.$api_compteur) != '') {
-						$dernier_releve = loadVariable('MYELECG_LASTRELEVE_'.$api_compteur);
+					$preload = loadVariable('MYELECG_LASTRELEVE_'.$api_compteur);
+					if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+						$dernier_releve = $preload;
 					} 
 					$xml .= "<LASTVALCOMPTEUR>".$dernier_releve."</LASTVALCOMPTEUR>";
 					if ($etat_compteur < $dernier_releve) {
@@ -189,8 +192,9 @@
 					}
 					saveVariable('MYELECG_LASTRELEVE_'.$api_compteur, $etat_compteur);
 					
-					if (loadVariable('MYELECG_CPT_'.$api_compteur) != '') {
-						$tab_cpt = loadVariable('MYELECG_CPT_'.$api_compteur);
+					$preload = loadVariable('MYELECG_CPT_'.$api_compteur);
+					if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+						$tab_cpt = $preload;
 					} else {
 						$tab_cpt['global'] = 0;
 					}
@@ -207,13 +211,14 @@
 				$cout = round(($releve_conso * (double)$tarif_dev), 6);
 				
 				// chargement des mesures précédentes
-				if (loadVariable('MYELECG_RELEVES_'.$api_compteur) != '') {
-					$tab_releves = loadVariable('MYELECG_RELEVES_'.$api_compteur);
+				$preload = loadVariable('MYELECG_RELEVES_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+					$tab_releves = $preload;
 				} else {
-						$tab_releves = array ("jour_global" => 0.0000, "jour_prec_global" => 0.0000, 
-																 "mois_global" => 0.0000, "mois_prec_global" => 0.0000,
-																 "annee_global" => 0.0000, "annee_prec_global" => 0.0000, "annee_prec_global_2" => 0.0000, "annee_prec_global_3" => 0.0000, "annee_prec_global_4" => 0.0000, "annee_prec_global_5" => 0.0000,
-																 "lastmesure" => date('d')."-00:00");
+					$tab_releves = array ("jour_global" => 0.0000, "jour_prec_global" => 0.0000, 
+									 "mois_global" => 0.0000, "mois_prec_global" => 0.0000,
+									 "annee_global" => 0.0000, "annee_prec_global" => 0.0000, "annee_prec_global_2" => 0.0000, "annee_prec_global_3" => 0.0000, "annee_prec_global_4" => 0.0000, "annee_prec_global_5" => 0.0000,
+									 "lastmesure" => date('d')."-00:00");
 				}
 				$lasttime = substr($tab_releves['lastmesure'], 3, 5);
 				$lastday = substr($tab_releves['lastmesure'], 0, 2);
@@ -230,9 +235,9 @@
 						$razannee = true;
 					}
 				}
-				
-				if (loadVariable('MYELECG_COUTS_'.$api_compteur) != '') {
-					$tab_couts = loadVariable('MYELECG_COUTS_'.$api_compteur);
+				$preload = loadVariable('MYELECG_COUTS_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+					$tab_couts = $preload;
 				} else {
 					$tab_couts = array ("jour_global" => 0.000000, "jour_prec_global" => 0.000000, 
 																 "mois_global" => 0.000000, "mois_prec_global" => 0.000000,
@@ -260,8 +265,9 @@
 						
 				// chargement prévisionnel annuel
 				$prevannuel = "...";
-				if (loadVariable('MYELECG_PREV_'.$api_compteur) != '') {
-					$prevannuel = loadVariable('MYELECG_PREV_'.$api_compteur);
+				$preload = loadVariable('MYELECG_PREV_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+					$prevannuel = $preload;
 				}
 					
 				// REMISES A ZERO
@@ -375,8 +381,9 @@
 								   "annee_global" => 0.0000, "annee_prec_global" => 0.0000, "annee_prec_global_2" => 0.0000, "annee_prec_global_3" => 0.0000, "annee_prec_global_4" => 0.0000, "annee_prec_global_5" => 0.0000,
 								   "lastmesure" => date('d')."-00:00");
             // restitution de la valeur actuel du compteur
-            if (loadVariable('MYELECG_RELEVES_'.$api_compteur) != '') {
-            	$tab_init = loadVariable('MYELECG_RELEVES_'.$api_compteur);
+			$preload = loadVariable('MYELECG_RELEVES_'.$api_compteur);
+			if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+               	$tab_init = $preload;
             }
             $xml .= "<JOUR_GLOBAL>".round($tab_init['jour_global'],3)."</JOUR_GLOBAL>";
             $xml .= "<MOIS_GLOBAL>".round($tab_init['mois_global'],3)."</MOIS_GLOBAL>";
@@ -391,8 +398,9 @@
 			$xml .= "<LASTMESURE>".round($tab_init['lastmesure'],3)."</LASTMESURE>";
 				
             if ($type_cumul) {
-				if (loadVariable('MYELECG_CPT_'.$api_compteur) != '') {
-					$tab_cpt = loadVariable('MYELECG_CPT_'.$api_compteur);
+				$preload = loadVariable('MYELECG_CPT_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+					$tab_cpt = $preload;
 					$cpt = $tab_cpt['global'] + $delta_global;
 				} 
             }		
@@ -402,8 +410,9 @@
 								   "mois_global" => 0.000000, "mois_prec_global" => 0.000000,
 								   "annee_global" => 0.000000, "annee_prec_global" => 0.000000, "annee_prec_global_2" => 0.000000, "annee_prec_global_3" => 0.000000, "annee_prec_global_4" => 0.000000, "annee_prec_global_5" => 0.000000);
 			// restitution de la valeur actuel des couts
-            if (loadVariable('MYELECG_COUTS_'.$api_compteur) != '') {
-            	$tab_initc = loadVariable('MYELECG_COUTS_'.$api_compteur);
+			$preload = loadVariable('MYELECG_COUTS_'.$api_compteur);
+			if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+				$tab_initc = $preload;
             }
             $xml .= "<JOUR_GLOBALC>".round($tab_initc['jour_global'],3)."</JOUR_GLOBALC>";
             $xml .= "<MOIS_GLOBALC>".round($tab_initc['mois_global'],3)."</MOIS_GLOBALC>";
@@ -417,9 +426,10 @@
 			$xml .= "<MOIS_PREC_GLOBALC>".round($tab_initc['mois_prec_global'],3)."</MOIS_PREC_GLOBALC>";
             
 			if ($arg_value != '') {
-				if (loadVariable('MYELECGAPI_CPT_'.$api_compteur) != '') {
+				$preload = loadVariable('MYELECGAPI_CPT_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
 					// charge le tableau des API des différents compeurs J, J-1...
-                    $tab_api_current_cpt = loadVariable('MYELECGAPI_CPT_'.$api_compteur);
+                    $tab_api_current_cpt = $preload;
 					$maj_tab_cpt = false;
                    	if ($arg_value == "jour_global" and $tab_api_current_cpt['jour_global'] != $api_script) {
 						$tab_api_current_cpt['jour_global'] = $api_script;
@@ -466,22 +476,19 @@
 				$tab_initc = array ("jour_global" => 0.000000, "jour_prec_global" => 0.000000, 
 								   "mois_global" => 0.000000, "mois_prec_global" => 0.000000,
 								   "annee_global" => 0.000000, "annee_prec_global" => 0.000000, "annee_prec_global_2" => 0.000000, "annee_prec_global_3" => 0.000000, "annee_prec_global_4" => 0.000000, "annee_prec_global_5" => 0.000000);
-				if (loadVariable('MYELECG_RELEVES_'.$api_compteur) != '') {
-					saveVariable('MYELECG_RELEVES_'.$api_compteur, $tab_init);
-            	}	
-            	if (loadVariable('MYELECG_COUTS_'.$api_compteur) != '') {
-            		saveVariable('MYELECG_COUTS_'.$api_compteur, $tab_initc);
-            	}	
-            	
-				if (loadVariable('MYELECG_LASTRELEVE_'.$api_compteur) != '') {
-					saveVariable('MYELECG_LASTRELEVE_'.$api_compteur, 0);
-				}	
-				if (loadVariable('MYELECG_CPT_'.$api_compteur) != '') {
-					$tab_cpt = loadVariable('MYELECG_CPT_'.$api_compteur);
+				
+				saveVariable('MYELECG_RELEVES_'.$api_compteur, $tab_init);
+            	saveVariable('MYELECG_COUTS_'.$api_compteur, $tab_initc);
+            	saveVariable('MYELECG_LASTRELEVE_'.$api_compteur, 0);
+				
+				$preload = loadVariable('MYELECG_CPT_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+					$tab_cpt = $preload;
 					$tab_cpt['global'] = 0;
 					saveVariable('MYELECG_CPT_'.$api_compteur, $tab_cpt);
 				}	
-				if (loadVariable('MYELECG_PREV_'.$api_compteur) != '') {
+				$preload = loadVariable('MYELECG_PREV_'.$api_compteur);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
 					saveVariable('MYELECG_PREV_'.$api_compteur, "...");
 				}
 				die();
@@ -498,8 +505,9 @@
 								   "annee_global" => 0.000000, "annee_prec_global" => 0.000000, "annee_prec_global_2" => 0.000000, "annee_prec_global_3" => 0.000000, "annee_prec_global_4" => 0.000000, "annee_prec_global_5" => 0.000000);
 				
 			$xml .= "<MAJ>".$type." - ".$arg_value."</MAJ>";
-			if (loadVariable('MYELECG_RELEVES_'.$api_compteur) != '') {
-				$tab_reinit= loadVariable('MYELECG_RELEVES_'.$api_compteur);
+			$preload = loadVariable('MYELECG_RELEVES_'.$api_compteur);
+			if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+				$tab_reinit= $preload;
 				$type = strtoupper($type);
 				if ($type == 'JOUR_GLOBAL' && $arg_value != "") {
 					$tab_reinit['jour_global'] = $arg_value;
@@ -548,9 +556,9 @@
 			}
             		
 		
-				
-			if (loadVariable('MYELECG_COUTS_'.$api_compteur) != '') {
-				$tab_reinitc = loadVariable('MYELECG_COUTS_'.$api_compteur);
+			$preload = loadVariable('MYELECG_COUTS_'.$api_compteur);
+			if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {	
+				$tab_reinitc = $preload;
 				if ($type == 'JOUR_GLOBALC' && $arg_value != "") {
 					$tab_reinitc['jour_global'] = $arg_value;
 					$xml .= "<MAJ_RESULT>OK</MAJ_RESULT>";
@@ -606,30 +614,33 @@
 								   "mois_global" => 0.000000, "mois_prec_global" => 0.000000,
 								   "annee_global" => 0.000000, "annee_prec_global" => 0.000000);
 				
-			
-			if (loadVariable('MYELECG_RELEVES') != '') {
-				$tab_releves = loadVariable('MYELECG_RELEVES');
+			$preload = loadVariable('MYELECG_RELEVES');
+			if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {	
+				$tab_releves = $preload;
 				if (array_key_exists($api_compteur, $tab_releves)) {
 					$tab_reinit = $tab_releves[$api_compteur];
 					saveVariable('MYELECG_RELEVES_'.$api_compteur, $tab_reinit);
 					
-					if (loadVariable('MYELECG_COUTS') != '') {
-						$tab_couts= loadVariable('MYELECG_COUTS');
+					$preload = loadVariable('MYELECG_COUTS');
+					if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {	
+						$tab_couts= $preload;
 						if (array_key_exists($api_compteur, $tab_couts)) {
 							$tab_reinitc = $tab_couts[$api_compteur];
 						}
 						saveVariable('MYELECG_COUTS_'.$api_compteur, $tab_reinitc);
 					}
 					
-					if (loadVariable('MYELECG_CPT') != '') {
-						$tab_cpt = loadVariable('MYELECG_CPT');
+					$preload = loadVariable('MYELECG_CPT');
+					if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {	
+						$tab_cpt = $preload;
 						if (array_key_exists($api_compteur, $tab_cpt)) {
 							saveVariable('MYELECG_CPT_'.$api_compteur, $tab_cpt[$api_compteur]);
 						}
 					} 
 					
-					if (loadVariable('MYELECG_LASTRELEVE') != '') {
-						$tab_dernierreleve = loadVariable('MYELECG_LASTRELEVE');
+					$preload = loadVariable('MYELECG_LASTRELEVE');
+					if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {	
+						$tab_dernierreleve = $preload;
 						if (array_key_exists($api_compteur, $tab_dernierreleve)) {
 							saveVariable('MYELECG_LASTRELEVE_'.$api_compteur, $tab_dernierreleve[$api_compteur]);
 						}
