@@ -1,0 +1,267 @@
+{
+	"plugin_id": "myelecg",
+	"name_fr": "Conso. électrique Tarif Unique",
+	"icon": "myelecg.png",
+	"version": "2.11",
+	"creation_date": "2017-11-15",
+	"modification_date": "2018-02-03",
+	"author": "Influman",
+	"description_fr": "Suivi de la <b>consommation électrique</b>,<br>depuis un état de consommation cumulé ou instantané.<br>Plug-In pour une <b>Tarification Globale</b>.",
+	"description_en": "",
+	"description_es": "",
+	"description_it": "",
+	"description_de": "",
+	"forum_link": "http://forum.eedomus.com/viewtopic.php?f=50&t=6065",
+	"parameters":
+  [
+		{
+			"parameter": "NAME", 
+			"description": "Nom du périphérique mesuré",
+			"xtype": "textfield",
+			"default_value": "Conso Appareil - Global",
+			"field": "width:200, allowBlank:false"
+		},
+		{
+    		"parameter": "APII", 
+			"description": "Périphérique Consommation Instantanée (en w)",
+    		"xtype": "combo",
+			"field": "store : getCombo('/json/list_all.php?value_type=float&filter_unit=W,kW'), displayField: 'label', valueField: 'id', typeAhead: true, forceSelection: true, triggerAction: 'all', selectOnFocus: true, editable: false, shadow:true, mode: 'local', width: 250, listWidth: 300, allowBlank: true"
+		},
+		{
+    		"parameter": "APIC", 
+			"description": "...ou Périphérique Consommation Cumulée (en wH)",
+    		"xtype": "combo",
+			"field": "store : getCombo('/json/list_all.php?value_type=float&filter_unit=Wh,kWh'), displayField: 'label', valueField: 'id', typeAhead: true, forceSelection: true, triggerAction: 'all', selectOnFocus: true, editable: false, shadow:true, mode: 'local', width: 250, listWidth: 300, allowBlank: true"
+		},
+		{
+			"parameter": "DELTA", 
+			"description": "Si cumulé, écart avec le compteur réel (global)",
+			"xtype": "textfield",
+			"default_value": "0",
+			"field": "width:150, allowBlank:false"
+		}		
+  ],
+	"scripts":
+	[
+		{
+			"name": "myelecg.php"
+		}
+	],
+	"devices":
+  [
+		{
+			"device_id": "suiconso",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - Statut",
+			"icon": "myelecg.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=updateconso",
+				"RAW_XPATH": "/MYELEC/STATUT",
+				"POLLING": "1"
+			}
+		},
+		{
+			"device_id": "compteur",
+			"parent_id": "suiconso",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - Compteur",
+			"icon": "myelecg.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=read&value=cpt_delta_global",
+				"RAW_XPATH": "/MYELEC/CPT_DELTA_GLOBAL",
+				"POLLING": "1"
+			}
+		},
+		{
+			"device_id": "abo",
+			"parent_id": "suiconso",
+			"module_id": "41",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - Abonnement",
+			"icon": "teleinfo_money.png",
+			"utilisation_id": "43",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "list",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=updatetarif&type=abo&value=poll",
+				"RAW_XPATH": "/MYELEC/ABO",
+				"POLLING": "1"
+			},
+			"values":
+			[
+				{ "value": "3kVA  GLOBAL", "description": "3kVA 67.04 eur", "icon": "teleinfo_money.png", "http_url": "http://localhost/script/?exec=myelecg.php", "http_type": "GET",  "http_params": "&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=updatetarif&type=abo&value=[RAW_VALUE]" },
+				{ "value": "6kVA  GLOBAL", "description": "6kVA 100.74 eur", "icon": "teleinfo_money.png", "http_url": "http://localhost/script/?exec=myelecg.php", "http_type": "GET",  "http_params": "&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=updatetarif&type=abo&value=[RAW_VALUE]" },
+				{ "value": "9kVA  GLOBAL", "description": "9kVA 118.74 eur", "icon": "teleinfo_money.png", "http_url": "http://localhost/script/?exec=myelecg.php", "http_type": "GET",  "http_params": "&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=updatetarif&type=abo&value=[RAW_VALUE]" },
+				{ "value": "12kVA GLOBAL", "description": "12kVA 137.12 eur", "icon": "teleinfo_money.png", "http_url": "http://localhost/script/?exec=myelecg.php", "http_type": "GET",  "http_params": "&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=updatetarif&type=abo&value=[RAW_VALUE]" },
+				{ "value": "9999", "description": "RAZ Attention", "icon": "teleinfo_money.png", "http_url": "http://localhost/script/?exec=myelecg.php", "http_type": "GET",  "http_params": "&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=raz" }
+			]
+		 },
+		{
+			"device_id": "tarif",
+			"parent_id" : "suiconso",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - Tarifs",
+			"icon": "teleinfo_money.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "list",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=updatetarif&type=tarif",
+				"RAW_XPATH": "/MYELEC/TARIF",
+				"POLLING": "1"
+			},
+      "values":
+			[
+				{ "value": "3kVA  GLOBAL", "description": "0.1546", "icon": "teleinfo_money.png" },
+				{ "value": "6kVA  GLOBAL", "description": "0.1466", "icon": "teleinfo_money.png" },
+				{ "value": "9kVA  GLOBAL", "description": "0.1483", "icon": "teleinfo_money.png" },
+				{ "value": "12kVA GLOBAL", "description": "0.1483", "icon": "teleinfo_money.png" }
+			]
+		},
+		{
+			"device_id": "jourglobal",
+			"parent_id": "suiconso",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - Jour",
+			"icon": "myelecjourg.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=read&value=jour_global",
+				"RAW_XPATH": "concat(/MYELEC/JOUR_GLOBAL, 'kwh (', /MYELEC/JOUR_GLOBALC, 'eur)')",
+				"POLLING": "1"
+			}
+		},
+		{
+			"device_id": "moisglobal",
+			"parent_id": "suiconso",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - Mois",
+			"icon": "myelecmoisg.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=read&value=mois_global",
+				"RAW_XPATH": "concat(/MYELEC/MOIS_GLOBAL, 'kwh (', /MYELEC/MOIS_GLOBALC, 'eur)')",
+				"POLLING": "1"
+			}
+		},
+		{
+			"device_id": "anneeglobal",
+			"parent_id": "suiconso",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - Année",
+			"icon": "myelecang.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=read&value=annee_global",
+				"RAW_XPATH": "concat(/MYELEC/ANNEE_GLOBAL, 'kwh (', /MYELEC/ANNEE_GLOBALC, 'eur)')",
+				"POLLING": "1"
+			}
+		},
+		{
+			"device_id": "moisprecglobal",
+			"parent_id": "suiconso",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - M-1",
+			"icon": "myelecmoisprecg.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=read&value=mois_prec_global",
+				"RAW_XPATH": "concat(/MYELEC/MOIS_PREC_GLOBAL, 'kwh (', /MYELEC/MOIS_PREC_GLOBALC, 'eur)')",
+				"POLLING": "1"
+			}
+		},
+		{
+			"device_id": "anprecglobal",
+			"parent_id": "suiconso",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - A-1",
+			"icon": "myelecanprecg.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=read&value=annee_prec_global",
+				"RAW_XPATH": "concat(/MYELEC/ANNEE_PREC_GLOBAL, 'kwh (', /MYELEC/ANNEE_PREC_GLOBALC, 'eur)')",
+				"POLLING": "1"
+			}
+		},
+		{
+			"device_id": "jprecglobal",
+			"parent_id": "suiconso",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "plugin.parameters.NAME - J-1",
+			"icon": "myelecjourprecg.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "plugin.parameters.APII",
+				"VAR2": "plugin.parameters.APIC",
+      			"VAR3": "plugin.parameters.DELTA",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=myelecg.php&apii=[VAR1]&apic=[VAR2]&delta=[VAR3]&action=read&value=jour_prec_global",
+				"RAW_XPATH": "concat(/MYELEC/JOUR_PREC_GLOBAL, 'kwh (', /MYELEC/JOUR_PREC_GLOBALC, 'eur)')",
+				"POLLING": "1"
+			}
+		}
+	]
+}
