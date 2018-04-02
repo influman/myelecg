@@ -1,7 +1,7 @@
 <?php  
             $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>";  
 	       //**********************************************************************************************************
-            // V2.11 : Script de suivi de la consommation électrique en tarif unique global
+            // V2.21 : Script de suivi de la consommation électrique en tarif unique global
             //*************************************** ******************************************************************
             // recuperation des infos depuis la requete
             // API CONSO INSTANTANEE - VAR1
@@ -345,7 +345,7 @@
 				
 				// Mise à jour hors polling des compteurs J, J-1...
 				if ($tab_api_cpt_ok) {
-					setValue($tab_api_current_cpt['jour_global'], round(releve_jour_global,3)."kWh (".round($tab_couts['jour_global'],3)."eur", $update_only = true);
+					setValue($tab_api_current_cpt['jour_global'], round($releve_jour_global,3)."kWh (".round($tab_couts['jour_global'],3)."eur", $update_only = true);
 					setValue($tab_api_current_cpt['mois_global'], round($releve_mois_global,3)."kWh (".round($tab_couts['mois_global'],3)."eur", $update_only = true);
 					setValue($tab_api_current_cpt['annee_global'], round($releve_annee_global,3)."kWh (".round($tab_couts['annee_global'],3)."eur", $update_only = true);
 					if ($tab_api_current_cpt['jour_prec_global'] != 0) {
@@ -395,7 +395,7 @@
 			$xml .= "<ANNEE_PREC_GLOBAL_5>".round($tab_init['annee_prec_global_5'],3)."</ANNEE_PREC_GLOBAL_5>";
             $xml .= "<JOUR_PREC_GLOBAL>".round($tab_init['jour_prec_global'],3)."</JOUR_PREC_GLOBAL>";
             $xml .= "<MOIS_PREC_GLOBAL>".round($tab_init['mois_prec_global'],3)."</MOIS_PREC_GLOBAL>";
-			$xml .= "<LASTMESURE>".round($tab_init['lastmesure'],3)."</LASTMESURE>";
+			//$xml .= "<LASTMESURE>".round($tab_init['lastmesure'],3)."</LASTMESURE>";
 				
             if ($type_cumul) {
 				$preload = loadVariable('MYELECG_CPT_'.$api_compteur);
