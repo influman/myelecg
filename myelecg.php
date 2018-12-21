@@ -649,7 +649,45 @@
 				}
 			}
 		}
-	    
+	    // copy api
+        if ($action == 'copy') {
+				$tab_reinit = array ("jour_global" => 0.0000, "jour_prec_global" => 0.0000, 
+								   "mois_global" => 0.0000, "mois_prec_global" => 0.0000,
+								   "annee_global" => 0.0000, "annee_prec_global" => 0.0000, "annee_prec_global_2" => 0.0000, "annee_prec_global_3" => 0.0000, "annee_prec_global_4" => 0.0000, "annee_prec_global_5" => 0.0000,
+								   "lastmesure" => date('d')."-00:00");
+				$tab_reinitc = array ("jour_global" => 0.000000, "jour_prec_global" => 0.000000, 
+								   "mois_global" => 0.000000, "mois_prec_global" => 0.000000,
+								   "annee_global" => 0.000000, "annee_prec_global" => 0.000000, "annee_prec_global_2" => 0.000000, "annee_prec_global_3" => 0.000000, "annee_prec_global_4" => 0.000000, "annee_prec_global_5" => 0.000000);
+				
+				$xml .= "<COPY>".$arg_value."</COPY>";
+				$preload = loadVariable('MYELECG_RELEVES_'.$arg_value);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {
+					$tab_reinit= $preload;
+					saveVariable('MYELECG_RELEVES_'.$api_compteur, $tab_reinit);
+						
+            	}	
+					
+				$preload = loadVariable('MYELECG_COUTS_'.$arg_value);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {	
+					$tab_reinitc = $preload;
+					saveVariable('MYELECG_COUTS_'.$api_compteur, $tab_reinitc);
+				}
+				$preload = loadVariable('MYELECG_CPT_'.$arg_value);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {	
+					$tab_cpt = $preload;
+					if (array_key_exists($arg_value, $tab_cpt)) {
+						saveVariable('MYELECG_CPT_'.$api_compteur, $tab_cpt[$arg_value]);
+					}
+				} 
+				$preload = loadVariable('MYELECG_LASTRELEVE_'.$arg_value);
+				if ($preload != '' && substr($preload, 0, 8) != "## ERROR") {	
+					$tab_dernierreleve = $preload;
+					if (array_key_exists($arg_value, $tab_dernierreleve)) {
+						saveVariable('MYELECG_LASTRELEVE_'.$api_compteur, $tab_dernierreleve[$arg_value]);
+					}
+				} 
+				$xml .= "<STATUT>COPY OK</STATUT>";				
+        } 
 
 	    $xml .= "</MYELEC>";
 		sdk_header('text/xml');
